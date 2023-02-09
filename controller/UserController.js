@@ -1,18 +1,37 @@
-
+const nodemailer = require("nodemailer");
 const UserSchema= require('../model/User');
 
-const registerUser=(req,resp)=>{
+const registerUser= (req,resp)=>{
     const user = new UserSchema({
         fullName:req.body.fullName,
         email:req.body.email,
         password:req.body.password
     });
-    user.save().then(result=>{
+    user.save().then(async result=>{
         let responseObject={
             message:'user created',
             email:result.email,
             token:'token'
         }
+
+        let transporter = nodemailer.createTransport({
+            host: "smtp.ethereal.email",
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.SENDER_EMAIL,
+                pass: process.env.EMAIL_APP_KEY
+            }
+        });
+
+         await transporter.sendMail({
+            from: '"Fred Foo 👻" <education.testlearn@gmail.com>', // sender address
+            to: req.body.email, // list of receivers
+            subject: "Hello ✔", // Subject line
+            text: "Registration Completed", // plain text body
+            html: "<b>Registration Completed!</b>", // html body
+        });
+
         resp.status(201).json(responseObject);
     }).catch(error=>{
         resp.status(500).json(error);
