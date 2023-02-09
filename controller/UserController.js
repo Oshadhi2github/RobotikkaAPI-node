@@ -2,6 +2,7 @@ const nodemailer = require("nodemailer");
 const UserSchema= require('../model/User');
 const bcrypt = require('bcrypt');
 const {hash} = require("bcrypt");
+const jwt = require('jsonwebtoken');
 
 const registerUser= (req,resp)=>{
     bcrypt.hash(req.body.password, 10, function(err, hash) {
@@ -12,6 +13,7 @@ const registerUser= (req,resp)=>{
             password:hash
         });
         user.save().then(async result=>{
+            let token = jwt.sign({ email: result.email,fullName:result.fullName }, process.env.PRIVATE_KEY);
             let responseObject={
                 message:'user created',
                 email:result.email,
