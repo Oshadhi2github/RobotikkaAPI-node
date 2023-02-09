@@ -52,6 +52,5 @@ const registerUser= (req,resp)=>{
     }).catch(error=>{
         resp.status(500).json(error);
     })
-
-
 }
+module.exports={registerUser}
