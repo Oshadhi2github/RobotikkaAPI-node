@@ -1,39 +1,45 @@
 const nodemailer = require("nodemailer");
 const UserSchema= require('../model/User');
+const bcrypt = require('bcrypt');
+const {hash} = require("bcrypt");
 
 const registerUser= (req,resp)=>{
-    const user = new UserSchema({
-        fullName:req.body.fullName,
-        email:req.body.email,
-        password:req.body.password
-    });
-    user.save().then(async result=>{
-        let responseObject={
-            message:'user created',
-            email:result.email,
-            token:'token'
-        }
+    bcrypt.hash(req.body.password, 10, function(err, hash) {
 
-        let transporter = nodemailer.createTransport({
-            host: "smtp.ethereal.email",
-            port: 587,
-            secure: false,
-            auth: {
-                user: process.env.SENDER_EMAIL,
-                pass: process.env.EMAIL_APP_KEY
+        const user = new UserSchema({
+            fullName:req.body.fullName,
+            email:req.body.email,
+            password:hash
+        });
+        user.save().then(async result=>{
+            let responseObject={
+                message:'user created',
+                email:result.email,
+                token:'token'
             }
-        });
 
-         await transporter.sendMail({
-            from: '"Fred Foo 👻" <education.testlearn@gmail.com>', // sender address
-            to: req.body.email, // list of receivers
-            subject: "Hello ✔", // Subject line
-            text: "Registration Completed", // plain text body
-            html: "<b>Registration Completed!</b>", // html body
-        });
+            let transporter = nodemailer.createTransport({
+                host: "smtp.ethereal.email",
+                port: 587,
+                secure: false,
+                auth: {
+                    user: process.env.SENDER_EMAIL,
+                    pass: process.env.EMAIL_APP_KEY
+                }
+            });
 
-        resp.status(201).json(responseObject);
-    }).catch(error=>{
-        resp.status(500).json(error);
-    })
+            await transporter.sendMail({
+                from: '"Fred Foo 👻" <education.testlearn@gmail.com>', // sender address
+                to: req.body.email, // list of receivers
+                subject: "Hello ✔", // Subject line
+                text: "Registration Completed", // plain text body
+                html: "<b>Registration Completed!</b>", // html body
+            });
+
+            resp.status(201).json(responseObject);
+        }).catch(error=>{
+            resp.status(500).json(error);
+        });
+    });
+
 }
