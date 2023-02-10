@@ -1,10 +1,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 require('dotenv').config();
 const cors = require('cors');
 
 mongoose.set('strictQuery',false);
+// create application/json parser
+const jsonParser = bodyParser.json()
 
+// create application/x-www-form-urlencoded parser
+const urlencodedParser = bodyParser.urlencoded({ extended: false })
+
+//==========================
+const UserRoute = require('./routes/UserRoute');
 //==========================
 const app = express();
 app.use(express.json({limit:'50mb'}));
@@ -19,3 +27,5 @@ mongoose.connect('mongodb://localhost:27017/robotikka_db').then(()=>{
 }).catch(error=>{
     console.log(error);
 })
+//============================
+app.use('/api/v1/user', UserRoute);
